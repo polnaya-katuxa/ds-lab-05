@@ -4,32 +4,32 @@
   "values": [
     {
       "key": "serviceUrl",
-      "value": "",
+      "value": "http://212.193.27.112/eokarpova/gateway",
       "enabled": true
     },
     {
       "key": "identityProviderUrl",
-      "value": "",
+      "value": "http://keycloak.ds-labs-kub.tw1.ru/realms/ds-lab-05/protocol/openid-connect/token",
       "enabled": true
     },
     {
       "key": "username",
-      "value": "",
+      "value": "eokarpova",
       "enabled": true
     },
     {
       "key": "password",
-      "value": "",
+      "value": "password",
       "enabled": true
     },
     {
       "key": "clientId",
-      "value": "",
+      "value": "ds-lab-05",
       "enabled": true
     },
     {
       "key": "clientSecret",
-      "value": "",
+      "value": "ys6eeFIg3Tf1sOgTae95MeNWvN66eQ9q",
       "enabled": true
     }
   ],
