@@ -1,0 +1,33 @@
+name: gateway
+namespace: eokarpova
+
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: ghcr.io/polnaya-katuxa/ds-lab-04-gateway
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: latest
+
+config:
+  port: 80
+  logLevel: info
+  postgres:
+    host: ""
+    port: 0
+    user: ""
+    password: ""
+    db: ""
+  services:
+    cars_service: http://cars-service
+    payment_service: http://payment-service
+    rental_service: http://rental-service
+  kafka:
+    broker: kafka-broker-0.kafka-broker-headless.eokarpova.svc.cluster.local:9092
+    cars_retry_topic: cars_service.retry
+    payment_retry_topic: payment_service.retry
+  jwksURL: http://keycloak.ds-labs-kub.tw1.ru/realms/ds-lab-05/protocol/openid-connect/certs
+  servicePassword: 123

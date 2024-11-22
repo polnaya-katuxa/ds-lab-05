@@ -1,0 +1,9 @@
+{{- include "car-rental-system.deployment" . }}
+---
+{{- include "car-rental-system.service" . }}
+---
+{{- include "car-rental-system.config" . }}
+---
+{{- include "car-rental-system.ingress" . }}
+---
+{{- include "car-rental-system.hpa" . }}

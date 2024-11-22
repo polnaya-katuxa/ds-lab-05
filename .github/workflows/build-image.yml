@@ -1,0 +1,37 @@
+name: Build service image
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+    secrets:
+      docker_username:
+        required: true
+      docker_password:
+        required: true
+
+jobs:
+  build-image:
+    name: Build and push Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.docker_username }}
+          password: ${{ secrets.docker_password }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.service-name }}
+          file: Dockerfile
+          push: true
+          tags: ghcr.io/polnaya-katuxa/ds-lab-04-${{ inputs.service-name }}:${{ github.sha }}

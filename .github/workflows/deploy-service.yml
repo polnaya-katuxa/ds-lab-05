@@ -1,0 +1,48 @@
+name: Deploy service
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+    secrets:
+      db-password:
+        required: true
+      service-password:
+        required: true
+      kubeconfig:
+        required: true
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: azure/k8s-set-context@v1
+        name: Set K8s context
+        with:
+          method: kubeconfig
+          kubeconfig: ${{ secrets.kubeconfig }}
+
+      - uses: azure/setup-kubectl@v4
+        name: Setup kubectl
+
+      - uses: azure/setup-helm@v4.2.0
+        name: Setup helm
+
+      - name: Helm chart install
+        run: >
+          helm upgrade --install --create-namespace --namespace eokarpova
+          --set 'image.tag=${{ github.sha }}'
+          --set 'config.postgres.password=${{ secrets.db-password }}'
+          --set 'config.servicePassword=${{ secrets.service-password }}'
+          --dependency-update
+          ${{ inputs.service-name }} ${{ inputs.service-name }}/deployments/helm
+
+      - name: Wait before all pods are ready
+        run: kubectl wait -n eokarpova -l app.kubernetes.io/name=${{ inputs.service-name }} pod --for=condition=Ready --timeout 3m

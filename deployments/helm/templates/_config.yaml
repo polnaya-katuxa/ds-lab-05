@@ -1,0 +1,28 @@
+{{- define "car-rental-system.config" -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+data:
+  config.yaml: |
+    Postgres:
+      Host: {{ .Values.config.postgres.host }}
+      Port: {{ .Values.config.postgres.port }}
+      User: {{ .Values.config.postgres.user }}
+      Password: {{ .Values.config.postgres.password }}
+      DBName: {{ .Values.config.postgres.db }}
+    Port: {{ .Values.config.port }}
+    LogLevel: {{ .Values.config.logLevel }}
+    Services:
+      Cars: {{ .Values.config.services.cars_service }}
+      Rental: {{ .Values.config.services.rental_service }}
+      Payment: {{ .Values.config.services.payment_service }}
+    Kafka:
+      Brokers:
+        - {{ .Values.config.kafka.broker }}
+      CarsServiceRetryTopic: {{ .Values.config.kafka.cars_retry_topic }}
+      PaymentServiceRetryTopic: {{ .Values.config.kafka.payment_retry_topic }}
+    JWKsURL: {{ .Values.config.jwksURL }}
+    ServicePassword: {{ .Values.config.servicePassword }}
+{{- end -}}

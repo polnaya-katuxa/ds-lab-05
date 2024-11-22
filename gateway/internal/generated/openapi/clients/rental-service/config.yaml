@@ -1,0 +1,5 @@
+package: rental_service
+generate:
+  client: true
+  models: true
+output: rental_service.go

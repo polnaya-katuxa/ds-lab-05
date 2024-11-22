@@ -1,0 +1,272 @@
+openapi: 3.0.1
+info:
+  title: Cars Service
+  version: "1.0"
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/v1/cars:
+    get:
+      summary: Получить список всех доступных для бронирования автомобилей
+      operationId: List
+      tags:
+        - Cars Service API
+      parameters:
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 0
+        - name: size
+          in: query
+          required: false
+          schema:
+            type: number
+            minimum: 1
+            maximum: 100
+        - name: showAll
+          in: query
+          required: false
+          schema:
+            type: boolean
+      responses:
+        "200":
+          description: Список доступных для бронирования автомобилей
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PaginationResponse"
+        "400":
+          description: Ошибка валидации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+
+  /api/v1/cars/{car_uid}:
+    get:
+      summary: Получить информацию об автомобиле по car_uid
+      operationId: Get
+      tags:
+        - Cars Service API
+      parameters:
+        - name: car_uid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Информация об автомобиле
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarResponse"
+        "404":
+          description: Автомобиль не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/cars/{car_uid}/book:
+    post:
+      summary: Забронировать автомобиль
+      operationId: Book
+      tags:
+        - Cars Service API
+      parameters:
+        - name: car_uid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: Информация об автомобиле
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CarResponse"
+        "404":
+          description: Автомобиль не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Автомобиль недоступен для бронирования
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /api/v1/cars/{car_uid}/unbook:
+    post:
+      summary: Снять бронь с автомобиля
+      operationId: Unbook
+      tags:
+        - Cars Service API
+      parameters:
+        - name: car_uid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "204":
+          description: Бронь успешно снята
+        "404":
+          description: Автомобиль не найден
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "409":
+          description: Автомобиль не был забронирован
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+  /manage/health:
+    get:
+      summary: Liveness probe
+      operationId: Live
+      responses:
+        "200":
+          description: Сервис работает
+
+components:
+  schemas:
+    PaginationResponse:
+      type: object
+      example:
+        {
+          "page": 1,
+          "pageSize": 1,
+          "totalElements": 1,
+          "items":
+            [
+              {
+                "carUid": "109b42f3-198d-4c89-9276-a7520a7120ab",
+                "brand": "Mercedes Benz",
+                "model": "GLA 250",
+                "registrationNumber": "ЛО777Х799",
+                "power": 249,
+                "type": "SEDAN",
+                "price": 3500,
+                "available": true,
+              },
+            ],
+        }
+      required:
+        - page
+        - pageSize
+        - totalElements
+        - items
+      properties:
+        page:
+          type: integer
+          description: Номер страницы
+        pageSize:
+          type: integer
+          description: Количество элементов на странице
+        totalElements:
+          type: integer
+          description: Общее количество элементов
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/CarResponse"
+
+    CarResponse:
+      type: object
+      example:
+        {
+          "carUid": "109b42f3-198d-4c89-9276-a7520a7120ab",
+          "brand": "Mercedes Benz",
+          "model": "GLA 250",
+          "registrationNumber": "ЛО777Х799",
+          "power": 249,
+          "type": "SEDAN",
+          "price": 3500,
+          "available": true,
+        }
+      required:
+        - carUid
+        - brand
+        - model
+        - registrationNumber
+        - type
+        - price
+        - available
+      properties:
+        carUid:
+          type: string
+          format: uuid
+          description: UUID автомобиля
+        brand:
+          type: string
+          description: Марка автомобиля
+        model:
+          type: string
+          description: Модель автомобиля
+        registrationNumber:
+          type: string
+          description: Регистрационный номер автомобиля
+        power:
+          type: integer
+          description: Мощность автомобиля в лошадиных силах
+        type:
+          type: string
+          description: Тип автомобиля
+          enum:
+            - SEDAN
+            - SUV
+            - MINIVAN
+            - ROADSTER
+        price:
+          type: integer
+          description: Цена автомобиля за сутки
+        available:
+          type: boolean
+          description: Флаг, указывающий что автомобиль доступен для бронирования
+
+    ErrorDescription:
+      type: object
+      required:
+        - field
+        - error
+      properties:
+        field:
+          type: string
+        error:
+          type: string
+
+    ErrorResponse:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          description: Информация об ошибке
+
+    ValidationErrorResponse:
+      type: object
+      required:
+        - message
+        - errors
+      properties:
+        message:
+          type: string
+          description: Информация об ошибке
+        errors:
+          type: array
+          description: Массив полей с описанием ошибки
+          items:
+            $ref: "#/components/schemas/ErrorDescription"

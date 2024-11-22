@@ -1,11 +1,154 @@
 name: GitHub Classroom Workflow
 on:
   push:
-    branches: [ master ]
+    branches: [master]
 jobs:
-  build:
+  build-cars-service:
+    name: Build cars-service
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service-name: cars-service
+
+  build-payment-service:
+    name: Build payment-service
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service-name: payment-service
+
+  build-rental-service:
+    name: Build rental-service
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service-name: rental-service
+
+  build-gateway:
+    name: Build gateway
+    uses: ./.github/workflows/build-service.yml
+    with:
+      service-name: gateway
+
+  test-cars-service:
+    name: Test cars-service
+    uses: ./.github/workflows/test-service.yml
+    needs: ["build-cars-service"]
+    with:
+      service-name: cars-service
+
+  test-payment-service:
+    name: Test payment-service
+    needs: ["build-payment-service"]
+    uses: ./.github/workflows/test-service.yml
+    with:
+      service-name: payment-service
+
+  test-rental-service:
+    name: Test rental-service
+    needs: ["build-rental-service"]
+    uses: ./.github/workflows/test-service.yml
+    with:
+      service-name: rental-service
+
+  test-gateway:
+    name: Test gateway
+    needs: ["build-gateway"]
+    uses: ./.github/workflows/test-service.yml
+    with:
+      service-name: gateway
+
+  build-image-cars-service:
+    name: Build and push cars-service Docker image
+    needs: ["test-cars-service"]
+    uses: ./.github/workflows/build-image.yml
+    with:
+      service-name: cars-service
+    secrets:
+      docker_username: ${{ secrets.DOCKER_USERNAME }}
+      docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+  build-image-payment-service:
+    name: Build and push payment-service Docker image
+    needs: ["test-payment-service"]
+    uses: ./.github/workflows/build-image.yml
+    with:
+      service-name: payment-service
+    secrets:
+      docker_username: ${{ secrets.DOCKER_USERNAME }}
+      docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+  build-image-rental-service:
+    name: Build and push rental-service Docker image
+    needs: ["test-rental-service"]
+    uses: ./.github/workflows/build-image.yml
+    with:
+      service-name: rental-service
+    secrets:
+      docker_username: ${{ secrets.DOCKER_USERNAME }}
+      docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+  build-image-gateway:
+    name: Build and push gateway Docker image
+    needs: ["test-gateway"]
+    uses: ./.github/workflows/build-image.yml
+    with:
+      service-name: gateway
+    secrets:
+      docker_username: ${{ secrets.DOCKER_USERNAME }}
+      docker_password: ${{ secrets.DOCKER_PASSWORD }}
+
+  deploy-cars-service:
+    name: Deploy cars-service
+    needs: ["build-image-cars-service"]
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service-name: cars-service
+    secrets:
+      db-password: ${{ secrets.CARS_DB_PASSWORD }}
+      service-password: ${{ secrets.SERVICE_PASSWORD }}
+      kubeconfig: ${{ secrets.KUBECONFIG }}
+
+  deploy-payment-service:
+    name: Deploy payment-service
+    needs: ["build-image-payment-service"]
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service-name: payment-service
+    secrets:
+      db-password: ${{ secrets.PAYMENT_DB_PASSWORD }}
+      service-password: ${{ secrets.SERVICE_PASSWORD }}
+      kubeconfig: ${{ secrets.KUBECONFIG }}
+
+  deploy-rental-service:
+    name: Deploy rental-service
+    needs: ["build-image-rental-service"]
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service-name: rental-service
+    secrets:
+      db-password: ${{ secrets.RENTAL_DB_PASSWORD }}
+      service-password: ${{ secrets.SERVICE_PASSWORD }}
+      kubeconfig: ${{ secrets.KUBECONFIG }}
+
+  deploy-gateway:
+    name: Deploy gateway
+    needs: ["build-image-gateway"]
+    uses: ./.github/workflows/deploy-service.yml
+    with:
+      service-name: gateway
+    secrets:
+      db-password: ""
+      service-password: ${{ secrets.SERVICE_PASSWORD }}
+      kubeconfig: ${{ secrets.KUBECONFIG }}
+
+  autograding:
     name: Autograding
     runs-on: ubuntu-latest
+    needs:
+      [
+        "deploy-cars-service",
+        "deploy-payment-service",
+        "deploy-rental-service",
+        "deploy-gateway",
+      ]
     steps:
       - uses: actions/checkout@v3
         with:
@@ -13,26 +156,14 @@ jobs:
 
       - uses: docker/setup-buildx-action@v2
 
-      # TODO build, publish to docker hub, deploy to k8s
-
       - name: Run API Tests
         uses: matt-ball/newman-action@master
         with:
-          collection: <variant>/postman/collection.json
-          environment: <variant>/postman/environment.json
+          collection: v3/postman/collection.json
+          environment: v3/postman/environment.json
           delayRequest: 100
           reporters: '[ "cli" ]'
 
       - uses: education/autograding@v1
         id: autograder
         continue-on-error: true
-
-      - name: Github auto grader mark
-        uses: Romanow/google-sheet-autograder-marker@v1.0
-        with:
-          google_token: ${{secrets.GOOGLE_API_KEY}}
-          sheet_id: "1xkgjUX6Qmk7rdJG-QPOToav-HWWtthJjnShIKnw3oIY"
-          homework_number: 5
-          user_column: 'D'
-          column_offset: 'F'
-          mark: "'+"

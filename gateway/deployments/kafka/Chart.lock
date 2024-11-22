@@ -1,0 +1,9 @@
+dependencies:
+- name: kafka
+  repository: https://charts.bitnami.com/bitnami
+  version: 27.1.0
+- name: kafdrop
+  repository: ""
+  version: 0.1.0
+digest: sha256:3df9afabc66bfa039257faa71d767e0815a3c7f1b1545fce8f1005d60905d8b3
+generated: "2024-11-13T01:20:19.227223+03:00"

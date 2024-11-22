@@ -1,0 +1,10 @@
+Postgres:
+  Host: payment-postgres
+  Port: 5432
+  User: program
+  Password: test
+  DBName: postgres
+Port: 8050
+LogLevel: debug
+JWKsURL: http://keycloak.ds-labs-kub.tw1.ru/realms/ds-lab-05/protocol/openid-connect/certs
+ServicePassword: 123

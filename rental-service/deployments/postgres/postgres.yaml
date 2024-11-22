@@ -1,0 +1,18 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: rental-service-db
+  namespace: eokarpova
+spec:
+  teamId: "acid"
+  volume:
+    size: 1Gi
+  numberOfInstances: 3
+  users:
+    program:
+      - superuser
+      - createdb
+  databases:
+    postgres: program
+  postgresql:
+    version: "16"

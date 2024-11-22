@@ -1,0 +1,28 @@
+name: Build service
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+
+jobs:
+  build:
+    name: Build service
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.22.4"
+
+      - name: Tidy
+        run: cd ${{ inputs.service-name }} && go mod tidy
+
+      - name: Build service
+        run: cd ${{ inputs.service-name }} && go build ./cmd/app/main.go

@@ -1,0 +1,5 @@
+package: cars_service
+generate:
+  client: true
+  models: true
+output: cars_service.go

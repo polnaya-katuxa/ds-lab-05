@@ -1,0 +1,51 @@
+{{- define "car-rental-system.deployment" -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.name }}
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "carRentalSystem.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "carRentalSystem.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "carRentalSystem.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: app
+          image: {{ .Values.image.repository }}:{{ .Values.image.tag }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: config
+              readOnly: true
+              mountPath: "/configs"
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Values.name }}
+      livenessProbe:
+        httpGet:
+          path: /manage/health
+          port: 80
+        failureThreshold: 1
+        periodSeconds: 10
+      startupProbe:
+        httpGet:
+          path: /manage/health
+          port: 80
+        failureThreshold: 15
+        periodSeconds: 10
+      readinessProbe:
+        httpGet:
+          path: /manage/health
+          port: 80
+        failureThreshold: 1
+        periodSeconds: 10
+{{- end -}}

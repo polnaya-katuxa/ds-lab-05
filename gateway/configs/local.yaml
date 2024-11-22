@@ -1,0 +1,13 @@
+Port: 8080
+LogLevel: debug
+Services:
+  Cars: http://cars-service:8070
+  Rental: http://rental-service:8060
+  Payment: http://payment-service:8050
+Kafka:
+  Brokers:
+    - kafka:29092
+  CarsServiceRetryTopic: cars_service.retry
+  PaymentServiceRetryTopic: payment_service.retry
+JWKsURL: http://keycloak.ds-labs-kub.tw1.ru/realms/ds-lab-05/protocol/openid-connect/certs
+ServicePassword: 123

@@ -1,0 +1,5 @@
+package: payment_service
+generate:
+  client: true
+  models: true
+output: payment_service.go

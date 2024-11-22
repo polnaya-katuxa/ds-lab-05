@@ -1,0 +1,6 @@
+dependencies:
+- name: car-rental-system
+  repository: file://../../../deployments/helm
+  version: 0.1.0
+digest: sha256:58f80f973909f0caeffd4eba2364535a62ae6b3dbd9ece8491ce1f251ba031db
+generated: "2024-11-01T02:16:52.621965+03:00"

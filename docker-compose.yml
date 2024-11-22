@@ -1,0 +1,123 @@
+version: "3"
+services:
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: ../Dockerfile
+    container_name: gateway
+    restart: on-failure
+    networks:
+      - ds
+    volumes:
+      - ./gateway/configs/local.yaml:/configs/config.yaml
+    ports:
+      - "8080:8080"
+
+  cars-postgres:
+    image: library/postgres:13
+    container_name: cars-postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: program
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: postgres
+    networks:
+      - ds
+    ports:
+      - "5440:5432"
+
+  cars-service:
+    build:
+      context: ./cars-service
+      dockerfile: ../Dockerfile
+    container_name: cars-service
+    restart: on-failure
+    networks:
+      - ds
+    volumes:
+      - ./cars-service/configs/local.yaml:/configs/config.yaml
+    ports:
+      - "8070:8070"
+
+  rental-postgres:
+    image: library/postgres:13
+    container_name: rental-postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: program
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: postgres
+    networks:
+      - ds
+    ports:
+      - "5442:5432"
+
+  rental-service:
+    build:
+      context: ./rental-service
+      dockerfile: ../Dockerfile
+    container_name: rental-service
+    restart: on-failure
+    networks:
+      - ds
+    volumes:
+      - ./rental-service/configs/local.yaml:/configs/config.yaml
+    ports:
+      - "8060:8060"
+
+  payment-postgres:
+    image: library/postgres:13
+    container_name: payment-postgres
+    restart: on-failure
+    environment:
+      POSTGRES_USER: program
+      POSTGRES_PASSWORD: test
+      POSTGRES_DB: postgres
+    networks:
+      - ds
+    ports:
+      - "5441:5432"
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: ../Dockerfile
+    container_name: payment-service
+    restart: on-failure
+    networks:
+      - ds
+    volumes:
+      - ./payment-service/configs/local.yaml:/configs/config.yaml
+    ports:
+      - "8050:8050"
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+    networks:
+      - ds
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    hostname: kafka
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    networks:
+      - ds
+
+networks:
+  ds:
+    driver: bridge
