@@ -72,8 +72,7 @@
             },
             "url": {
               "raw": "{{identityProviderUrl}}",
-              "host": ["{{identityProviderUrl}}"],
-              "path": ["oauth", "token"]
+              "host": ["{{identityProviderUrl}}"]
             }
           },
           "response": []
